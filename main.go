@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	if !config.Read() {
+	if !config.Read("") {
 		fmt.Printf("Unable to load config file: %s\n", config.File)
 	}
 
