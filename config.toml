@@ -1,0 +1,6 @@
+port = 8090
+
+[mongo]
+host = "localhost"
+port = 27017
+db = "file_share"
