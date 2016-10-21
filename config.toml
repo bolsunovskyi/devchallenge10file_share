@@ -1,5 +1,5 @@
 port = 8090
-
+secret = "lfjxsuqs6wmmygp7d1as"
 [mongo]
 host = "localhost"
 port = 27017

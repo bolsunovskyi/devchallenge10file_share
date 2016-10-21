@@ -8,6 +8,9 @@ import (
 	"github.com/gorilla/mux"
 	"fmt"
 	"file_share/config"
+	"encoding/json"
+	"file_share/models"
+	"file_share/repository/user"
 )
 
 func init() {
@@ -29,5 +32,14 @@ func TestCreateUser(t *testing.T) {
 	if status := recorder.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
+	}
+
+	appUser := models.User{}
+	if err := json.NewDecoder(recorder.Body).Decode(&appUser); err != nil {
+		t.Error(err.Error())
+	}
+
+	if err := user.DeleteUser(appUser.ID); err != nil {
+		t.Error(err.Error())
 	}
 }

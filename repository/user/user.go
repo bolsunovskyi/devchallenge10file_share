@@ -5,11 +5,13 @@ import (
 	"gopkg.in/go-playground/validator.v9"
 	"file_share/database"
 	"gopkg.in/mgo.v2/bson"
+	"errors"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var Collection string = "user"
 
-func CreateUser(firstName string, lastName string, email string, password string) error {
+func CreateUser(firstName string, lastName string, email string, password string) (*models.User, error) {
 	user := models.User{
 		FirstName:	firstName,
 		LastName:	lastName,
@@ -18,23 +20,37 @@ func CreateUser(firstName string, lastName string, email string, password string
 	}
 
 	if err := validator.New().Struct(user); err != nil {
-		return err
+		return nil, err
 	}
 
 	session, db, err := database.GetSession()
+	defer session.Close()
+
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	//TODO: add check for user exists
-	db.C(Collection).Insert(&user)
-	session.Close()
+	_, err = FindUserByEmail(email)
 
-	return nil
+	if err == nil {
+		return nil, errors.New("User already exists")
+	}
+
+	user.ID = bson.NewObjectId()
+	pass, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+	user.Password = string(pass)
+	db.C(Collection).Insert(&user)
+
+	return &user, nil
 }
 
 func FindUserByEmail(email string) (*models.User, error) {
 	session, db, err := database.GetSession()
+	defer session.Close()
+
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +58,6 @@ func FindUserByEmail(email string) (*models.User, error) {
 	user := models.User{}
 
 	err = db.C(Collection).Find(bson.M{"email": email}).One(&user)
-	session.Close()
 
 	if err != nil {
 		return nil, err
@@ -51,4 +66,29 @@ func FindUserByEmail(email string) (*models.User, error) {
 	return &user, nil
 }
 
-//func DeleteUser()
+func DeleteUser(userID bson.ObjectId) error {
+	session, db, err := database.GetSession()
+	defer session.Clone()
+
+	if err != nil {
+		return err
+	}
+
+	if err = db.C(Collection).RemoveId(userID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func CheckUser(email string, password string) error {
+	if user, err := FindUserByEmail(email); err != nil {
+		return err
+	} else {
+		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

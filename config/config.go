@@ -12,6 +12,7 @@ type Mongo struct {
 }
 
 type AppConfig struct {
+	Secret	string
 	Port	uint
 	Mongo	Mongo
 }
