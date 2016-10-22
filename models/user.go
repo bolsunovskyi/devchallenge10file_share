@@ -2,6 +2,7 @@ package models
 
 import "gopkg.in/mgo.v2/bson"
 
+//TODO: skip password on json encode
 type User struct {
 	ID		bson.ObjectId	`bson:"_id,omitempty"`
 	FirstName	string		`validate:"required" bson:"first_name"`

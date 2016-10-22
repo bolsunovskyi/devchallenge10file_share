@@ -27,4 +27,10 @@ var appRoutes = routes{
 		Pattern:	"/v1/user",
 		HandlerFunc:	handlers.CreateUser,
 	},
+	route{
+		Name:		"LoginUser",
+		Method:		"POST",
+		Pattern:	"/v1/token",
+		HandlerFunc:	handlers.LoginUser,
+	},
 }

@@ -5,22 +5,53 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"time"
 	"file_share/config"
+	"fmt"
+	"errors"
+	"gopkg.in/mgo.v2/bson"
 )
 
-func CreateToken(user models.User) (string, error) {
+//TODO: change auth scheme to public/private key
+
+func CreateToken(tokenUser models.User) (*string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user": user,
+		"ID": tokenUser.ID.Hex(),
+		"FirstName": tokenUser.FirstName,
+		"LastName": tokenUser.LastName,
+		"Email": tokenUser.Email,
 		"nbf": time.Now().Unix(),
 	})
-
-	tokenString, err := token.SignedString(config.Config.Secret)
+	tokenString, err := token.SignedString([]byte(config.Config.Secret))
 	if err != nil {
 		return nil, err
 	}
 
-	return tokenString, nil
+	return &tokenString, nil
 }
 
-func CheckToken(token string) (*models.User, error) {
-	return nil, nil
+func CheckToken(tokenString string) (*models.User, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(config.Config.Secret), nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+
+		returnUser := models.User{
+			ID: 		bson.ObjectIdHex(claims["ID"].(string)),
+			Email:		claims["Email"].(string),
+			Password:	"",
+			FirstName:	claims["FirstName"].(string),
+			LastName:	claims["LastName"].(string),
+		}
+
+		return &returnUser, nil
+	}
+
+	return nil, errors.New("Unable to validate token")
 }

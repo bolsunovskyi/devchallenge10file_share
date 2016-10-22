@@ -1,0 +1,6 @@
+port = 8030
+secret = "123456"
+[mongo]
+host = "localhost"
+port = 27017
+db = "file_share_test"

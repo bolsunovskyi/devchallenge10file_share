@@ -81,14 +81,16 @@ func DeleteUser(userID bson.ObjectId) error {
 	return nil
 }
 
-func CheckUser(email string, password string) error {
-	if user, err := FindUserByEmail(email); err != nil {
-		return err
-	} else {
-		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-			return err
-		}
+func CheckUser(email string, password string) (*models.User, error) {
+	user, err := FindUserByEmail(email);
+	if  err != nil {
+		return nil, err
 	}
 
-	return nil
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		return nil, err
+	}
+
+
+	return user, nil
 }
