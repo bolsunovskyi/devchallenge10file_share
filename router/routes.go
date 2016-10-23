@@ -33,4 +33,11 @@ var appRoutes = routes{
 		Pattern:	"/v1/token",
 		HandlerFunc:	handlers.LoginUser,
 	},
+	route{
+		Name:		"UploadFile",
+		Method:		"POST",
+		Pattern:	"/v1/file/{fileName:[0-9a-zA-Z._]+}",
+		//Pattern:	"/v1/file/{fileName}",
+		HandlerFunc:	handlers.UploadFile,
+	},
 }
