@@ -15,4 +15,6 @@ func TestUploadFile(t *testing.T) {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/v1/file/foo.txt", CreateUser)
+
+	os.Remove(fileName)
 }
