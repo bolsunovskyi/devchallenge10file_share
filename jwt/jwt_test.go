@@ -3,16 +3,11 @@ package jwt
 import (
 	"testing"
 	"file_share/repository/user"
-	"file_share/config"
-	"fmt"
-	"file_share/database"
+	"file_share/test"
 )
 
 func init() {
-	config.File = "config_test.toml"
-	if err := config.Read("../"); !err {
-		fmt.Println("Unable to load config")
-	}
+	test.InitConfig("../")
 }
 
 func TestCreateToken(t *testing.T) {
@@ -45,13 +40,5 @@ func TestCreateToken(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	session, db, err := database.GetSession()
-	defer  session.Close()
-
-	if err != nil {
-		t.Error(err.Error())
-	}
-	if err := db.DropDatabase(); err != nil {
-		t.Error(err.Error())
-	}
+	test.TearDown(t)
 }

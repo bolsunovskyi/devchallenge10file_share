@@ -6,31 +6,14 @@ import (
 	"strings"
 	"net/http/httptest"
 	"github.com/gorilla/mux"
-	"fmt"
-	"file_share/config"
 	"encoding/json"
 	"file_share/models"
 	"file_share/repository/user"
-	"file_share/database"
+	"file_share/test"
 )
 
 func init() {
-	config.File = "config_test.toml"
-	if err := config.Read("../"); !err {
-		fmt.Println("Unable to load config")
-	}
-}
-
-func down(t *testing.T) {
-	session, db, err := database.GetSession()
-	defer  session.Close()
-
-	if err != nil {
-		t.Error(err.Error())
-	}
-	if err := db.DropDatabase(); err != nil {
-		t.Error(err.Error())
-	}
+	test.InitConfig("../")
 }
 
 func TestCreateUser(t *testing.T) {
@@ -57,7 +40,7 @@ func TestCreateUser(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	down(t)
+	test.TearDown(t)
 }
 
 func TestLoginUser(t *testing.T) {
@@ -85,5 +68,6 @@ func TestLoginUser(t *testing.T) {
 	if err := json.NewDecoder(recorder.Body).Decode(&tokenMap); err != nil {
 		t.Error("Unable to parse respnse")
 	}
-	down(t)
+
+	test.TearDown(t)
 }

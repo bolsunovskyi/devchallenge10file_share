@@ -2,29 +2,12 @@ package user
 
 import (
 	"testing"
-	"fmt"
-	"file_share/config"
 	"file_share/models"
-	"file_share/database"
+	"file_share/test"
 )
 
 func init() {
-	config.File = "config_test.toml"
-	if err := config.Read("../../"); !err {
-		fmt.Println("Unable to load config")
-	}
-}
-
-func down(t *testing.T) {
-	session, db, err := database.GetSession()
-	defer  session.Close()
-
-	if err != nil {
-		t.Error(err.Error())
-	}
-	if err := db.DropDatabase(); err != nil {
-		t.Error(err.Error())
-	}
+	test.InitConfig("../../")
 }
 
 func createUser() (*models.User, error) {
@@ -40,7 +23,7 @@ func TestCreateUser(t *testing.T) {
 		}
 	}
 
-	down(t)
+	test.TearDown(t)
 }
 
 func TestFindUserByEmail(t *testing.T) {
@@ -58,7 +41,7 @@ func TestFindUserByEmail(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	down(t)
+	test.TearDown(t)
 }
 
 func TestCheckUser(t *testing.T) {
@@ -76,5 +59,5 @@ func TestCheckUser(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	down(t)
+	test.TearDown(t)
 }

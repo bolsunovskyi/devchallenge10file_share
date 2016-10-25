@@ -8,7 +8,7 @@ import (
 
 func TestUploadFile(t *testing.T) {
 	fileName := "foo.txt"
-	localFile, err := os.Create(fileName)
+	_, err := os.Create(fileName)
 	if err != nil {
 		t.Error(err.Error())
 	}
