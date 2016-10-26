@@ -37,7 +37,18 @@ var appRoutes = routes{
 		Name:		"UploadFile",
 		Method:		"POST",
 		Pattern:	"/v1/file/{fileName:[0-9a-zA-Z._]+}",
-		//Pattern:	"/v1/file/{fileName}",
 		HandlerFunc:	handlers.UploadFile,
+	},
+	route{
+		Name:		"ListFiles",
+		Method:		"GET",
+		Pattern:	"/v1/files/{parent}",
+		HandlerFunc:	handlers.ListFiles,
+	},
+	route{
+		Name:		"ListFilesNoParent",
+		Method:		"GET",
+		Pattern:	"/v1/files",
+		HandlerFunc:	handlers.ListFiles,
 	},
 }
