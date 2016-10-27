@@ -14,6 +14,7 @@ func TestCreateToken(t *testing.T) {
 	tokenUser, err := user.CreateUser("foo", "bar", "foo@gmail.com", "123456")
 	if(err != nil) {
 		t.Error(err.Error())
+		return
 	}
 
 	token, err := CreateToken(*tokenUser)

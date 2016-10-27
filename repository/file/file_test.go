@@ -5,6 +5,7 @@ import (
 	"testing"
 	"os"
 	"file_share/config"
+	"file_share/repository/user"
 )
 
 func init() {
@@ -12,6 +13,12 @@ func init() {
 }
 
 func TestUploadFile(t *testing.T) {
+	appUser, err := user.CreateUser("foo", "bar", "foo@gmail.com", "123456")
+	if err != nil {
+		t.Error(err.Error())
+		return
+	}
+
 	fileName := "tmp_file.txt"
 	appFile, err := os.Create(fileName)
 	if err != nil {
@@ -20,12 +27,12 @@ func TestUploadFile(t *testing.T) {
 
 	appFile.Write([]byte("Test Data"))
 
-	_, err = UploadFile(appFile, fileName, nil)
+	_, err = UploadFile(appFile, fileName, nil, appUser)
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	appFile.Close()
+	appFile.Close();
 	os.Remove(fileName)
 	os.RemoveAll(config.Config.DataFolder)
 
@@ -33,13 +40,19 @@ func TestUploadFile(t *testing.T) {
 }
 
 func TestCreateFolder(t *testing.T) {
-	folder, err := CreateFolder("images", nil)
+	appUser, err := user.CreateUser("foo", "bar", "foo@gmail.com", "123456")
+	if err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	folder, err := CreateFolder("images", nil, appUser)
 	if err != nil {
 		t.Error(err.Error())
 	}
 
 	folderID := folder.ID.Hex()
-	_, err = CreateFolder("summer2016", &folderID)
+	_, err = CreateFolder("summer2016", &folderID, appUser)
 	if err != nil {
 		t.Error(err.Error())
 	}

@@ -12,7 +12,7 @@ import (
 
 var Collection string = "file"
 
-func UploadFile(reader io.Reader, fileName string, parentID *string) (uploadedFile *models.File, err error) {
+func UploadFile(reader io.Reader, fileName string, parentID *string, appUser *models.User) (uploadedFile *models.File, err error) {
 
 	parent, err := checkParent(parentID)
 	if err != nil {
@@ -44,6 +44,7 @@ func UploadFile(reader io.Reader, fileName string, parentID *string) (uploadedFi
 		Name:		fileName,
 		Created:	time.Now(),
 		Updated:	time.Now(),
+		UserID:		appUser.ID,
 	}
 
 	if parent != nil {
@@ -51,6 +52,9 @@ func UploadFile(reader io.Reader, fileName string, parentID *string) (uploadedFi
 	}
 
 	session, db, err := database.GetSession()
+	if err != nil {
+		return nil, err
+	}
 	defer session.Close()
 
 	err = db.C(Collection).Insert(uploadedFile)
@@ -62,7 +66,7 @@ func UploadFile(reader io.Reader, fileName string, parentID *string) (uploadedFi
 	return uploadedFile, nil
 }
 
-func CreateFolder(fileName string, parentID *string) (uploadedFile *models.File, err error) {
+func CreateFolder(fileName string, parentID *string, appUser *models.User) (uploadedFile *models.File, err error) {
 	parent, err := checkParent(parentID)
 	if err != nil {
 		return
@@ -79,6 +83,7 @@ func CreateFolder(fileName string, parentID *string) (uploadedFile *models.File,
 		Name:		fileName,
 		Created:	time.Now(),
 		Updated:	time.Now(),
+		UserID:		appUser.ID,
 	}
 
 	if parent != nil {
@@ -86,6 +91,9 @@ func CreateFolder(fileName string, parentID *string) (uploadedFile *models.File,
 	}
 
 	session, db, err := database.GetSession()
+	if err != nil {
+		return nil, err
+	}
 	defer session.Close()
 
 	err = db.C(Collection).Insert(uploadedFile)
@@ -97,9 +105,12 @@ func CreateFolder(fileName string, parentID *string) (uploadedFile *models.File,
 	return uploadedFile, nil
 }
 
-
+//ListFiles returns all files by folder
 func ListFiles(folderID *string) (files []models.File, err error) {
 	session, db, err := database.GetSession()
+	if err != nil {
+		return nil, err
+	}
 	defer session.Close()
 
 	var parent *models.File

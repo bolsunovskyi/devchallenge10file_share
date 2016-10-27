@@ -16,11 +16,12 @@ func InitConfig(configPath string) {
 
 func TearDown(t *testing.T) {
 	session, db, err := database.GetSession()
-	defer  session.Close()
-
 	if err != nil {
 		t.Error(err.Error())
+		return
 	}
+	defer  session.Close()
+
 	if err := db.DropDatabase(); err != nil {
 		t.Error(err.Error())
 	}

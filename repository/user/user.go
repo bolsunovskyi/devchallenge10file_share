@@ -24,11 +24,10 @@ func CreateUser(firstName string, lastName string, email string, password string
 	}
 
 	session, db, err := database.GetSession()
-	defer session.Close()
-
 	if err != nil {
 		return nil, err
 	}
+	defer session.Close()
 
 	_, err = FindUserByEmail(email)
 
@@ -49,11 +48,10 @@ func CreateUser(firstName string, lastName string, email string, password string
 
 func FindUserByEmail(email string) (*models.User, error) {
 	session, db, err := database.GetSession()
-	defer session.Close()
-
 	if err != nil {
 		return nil, err
 	}
+	defer session.Close()
 
 	user := models.User{}
 
@@ -68,11 +66,10 @@ func FindUserByEmail(email string) (*models.User, error) {
 
 func DeleteUser(userID bson.ObjectId) error {
 	session, db, err := database.GetSession()
-	defer session.Clone()
-
 	if err != nil {
 		return err
 	}
+	defer session.Clone()
 
 	if err = db.C(Collection).RemoveId(userID); err != nil {
 		return err

@@ -8,8 +8,8 @@ import (
 	"file_share/models"
 )
 
-func createFolder(fileName string, parent *string, w http.ResponseWriter) {
-	folder, err := file.CreateFolder(fileName, parent)
+func createFolder(fileName string, parent *string, w http.ResponseWriter, appUser *models.User) {
+	folder, err := file.CreateFolder(fileName, parent, appUser)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(models.Error{
@@ -22,8 +22,8 @@ func createFolder(fileName string, parent *string, w http.ResponseWriter) {
 	json.NewEncoder(w).Encode(folder)
 }
 
-func uploadFile(fileName string, parent *string, w http.ResponseWriter, r *http.Request) {
-	uploadedFile, err := file.UploadFile(r.Body, fileName, parent);
+func uploadFile(fileName string, parent *string, w http.ResponseWriter, r *http.Request, appUser *models.User) {
+	uploadedFile, err := file.UploadFile(r.Body, fileName, parent, appUser);
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(models.Error{
@@ -36,7 +36,7 @@ func uploadFile(fileName string, parent *string, w http.ResponseWriter, r *http.
 	json.NewEncoder(w).Encode(uploadedFile)
 }
 
-func UploadFile(w http.ResponseWriter, r *http.Request) {
+func UploadFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 	vars := mux.Vars(r)
 	fileName := vars["fileName"]
 	var parent *string = nil
@@ -46,13 +46,13 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if folder := r.Header.Get("File-Folder"); folder != "" {
-		createFolder(fileName, parent, w)
+		createFolder(fileName, parent, w, appUser)
 	} else {
-		uploadFile(fileName, parent, w, r)
+		uploadFile(fileName, parent, w, r, appUser)
 	}
 }
 
-func ListFiles(w http.ResponseWriter, r *http.Request) {
+func ListFiles(w http.ResponseWriter, r *http.Request, _ *models.User) {
 	vars := mux.Vars(r)
 	var files []models.File
 	var err error

@@ -15,4 +15,5 @@ type File struct {
 	IsDir		bool
 	RealPath	string		`bson:"realpath,omitempty"`
 	RealName	string		`bson:"realname,omitempty"`
+	UserID		bson.ObjectId
 }

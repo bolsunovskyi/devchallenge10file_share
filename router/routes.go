@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 	"file_share/handlers"
+	"file_share/middleware"
 )
 
 type route struct {
@@ -37,18 +38,18 @@ var appRoutes = routes{
 		Name:		"UploadFile",
 		Method:		"POST",
 		Pattern:	"/v1/file/{fileName:[0-9a-zA-Z._]+}",
-		HandlerFunc:	handlers.UploadFile,
+		HandlerFunc:	middleware.Auth(handlers.UploadFile),
 	},
 	route{
 		Name:		"ListFiles",
 		Method:		"GET",
 		Pattern:	"/v1/files/{parent}",
-		HandlerFunc:	handlers.ListFiles,
+		HandlerFunc:	middleware.Auth(handlers.ListFiles),
 	},
 	route{
 		Name:		"ListFilesNoParent",
 		Method:		"GET",
 		Pattern:	"/v1/files",
-		HandlerFunc:	handlers.ListFiles,
+		HandlerFunc:	middleware.Auth(handlers.ListFiles),
 	},
 }
