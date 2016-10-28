@@ -9,11 +9,11 @@ type File struct {
 	ID		bson.ObjectId	`bson:"_id,omitempty"`
 	Name		string
 	ParentID	bson.ObjectId	`bson:"parentID,omitempty"`
-	FileSize	uint		`bson:"filesize,omitempty"`
+	FileSize	uint		`bson:"fileSize,omitempty"`
 	Created		time.Time
 	Updated		time.Time
-	IsDir		bool
-	RealPath	string		`bson:"realpath,omitempty"`
-	RealName	string		`bson:"realname,omitempty"`
-	UserID		bson.ObjectId
+	IsDir		bool		`bson:"isDir"`
+	RealPath	string		`bson:"realPath,omitempty"`
+	RealName	string		`bson:"realName,omitempty"`
+	UserID		bson.ObjectId	`bson:"userID"`
 }

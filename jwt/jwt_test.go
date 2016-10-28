@@ -11,34 +11,25 @@ func init() {
 }
 
 func TestCreateToken(t *testing.T) {
-	tokenUser, err := user.CreateUser("foo", "bar", "foo@gmail.com", "123456")
-	if(err != nil) {
-		t.Error(err.Error())
-		return
-	}
-
-	token, err := CreateToken(*tokenUser)
-	if err != nil {
+	if tokenUser, err := user.CreateUser("foo", "bar", "foo22@gmail.com", "123456"); err != nil {
 		t.Error(err.Error())
 	} else {
-
-		validUser, err := CheckToken(*token)
-		if err != nil {
+		if token, err := CreateToken(*tokenUser); err != nil {
 			t.Error(err.Error())
+		} else {
+			if validUser, err := CheckToken(*token); err != nil {
+				t.Error(err.Error())
+			} else {
+				if validUser.ID != tokenUser.ID {
+					t.Error("User not equals")
+					t.Error(validUser.ID)
+					t.Error(tokenUser.ID)
+
+					t.Error(validUser.Email)
+					t.Error(tokenUser.Email)
+				}
+			}
 		}
-
-		if validUser.ID != tokenUser.ID {
-			t.Error("User not equals")
-			t.Error(validUser.ID)
-			t.Error(tokenUser.ID)
-
-			t.Error(validUser.Email)
-			t.Error(tokenUser.Email)
-		}
-	}
-
-	if err := user.DeleteUser(tokenUser.ID); err != nil {
-		t.Error(err.Error())
 	}
 
 	test.TearDown(t)

@@ -20,9 +20,9 @@ func TearDown(t *testing.T) {
 		t.Error(err.Error())
 		return
 	}
-	defer  session.Close()
-
+	session.Fsync(false)
 	if err := db.DropDatabase(); err != nil {
 		t.Error(err.Error())
 	}
+	session.Close()
 }

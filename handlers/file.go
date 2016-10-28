@@ -8,34 +8,6 @@ import (
 	"file_share/models"
 )
 
-func createFolder(fileName string, parent *string, w http.ResponseWriter, appUser *models.User) {
-	folder, err := file.CreateFolder(fileName, parent, appUser)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(models.Error{
-			Message: err.Error(),
-		})
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(folder)
-}
-
-func uploadFile(fileName string, parent *string, w http.ResponseWriter, r *http.Request, appUser *models.User) {
-	uploadedFile, err := file.UploadFile(r.Body, fileName, parent, appUser);
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(models.Error{
-			Message: err.Error(),
-		})
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(uploadedFile)
-}
-
 func UploadFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 	vars := mux.Vars(r)
 	fileName := vars["fileName"]
@@ -52,15 +24,16 @@ func UploadFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 	}
 }
 
-func ListFiles(w http.ResponseWriter, r *http.Request, _ *models.User) {
+//TODO: add pagination
+func ListFiles(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 	vars := mux.Vars(r)
 	var files []models.File
 	var err error
 
 	if parent, ok := vars["parent"]; ok {
-		files, err = file.ListFiles(&parent)
+		files, err = file.ListFiles(&parent, appUser)
 	} else {
-		files, err = file.ListFiles(nil)
+		files, err = file.ListFiles(nil, appUser)
 	}
 
 	if err != nil {
@@ -72,6 +45,37 @@ func ListFiles(w http.ResponseWriter, r *http.Request, _ *models.User) {
 	}
 
 
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(files)
+}
+
+func DeleteFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
+	vars := mux.Vars(r)
+	err := file.DeleteFile(vars["fileID"], appUser)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(models.Error{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func RenameFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
+	vars := mux.Vars(r)
+
+	updateFile, err := file.RenameFile(vars["fileID"], r.FormValue("name"), appUser)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(models.Error{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(updateFile)
 }

@@ -52,4 +52,16 @@ var appRoutes = routes{
 		Pattern:	"/v1/files",
 		HandlerFunc:	middleware.Auth(handlers.ListFiles),
 	},
+	route{
+		Name:		"DeleteFile",
+		Method:		"DELETE",
+		Pattern:	"/v1/file/{fileID}",
+		HandlerFunc:	middleware.Auth(handlers.DeleteFile),
+	},
+	route{
+		Name:		"RenameFile",
+		Method:		"PUT",
+		Pattern:	"/v1/file/{fileID}",
+		HandlerFunc:	middleware.Auth(handlers.RenameFile),
+	},
 }
