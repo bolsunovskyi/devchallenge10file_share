@@ -41,27 +41,19 @@ func ListFiles(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 	}
 
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(models.Error{
-			Message: err.Error(),
-		})
+		sendError(err, w)
 		return
 	}
 
-
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(files)
+	sendOK(files, w)
 }
 
 func DeleteFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 	vars := mux.Vars(r)
-	err := file.DeleteFile(vars["fileID"], appUser)
 
+	err := file.DeleteFile(vars["fileID"], appUser)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(models.Error{
-			Message: err.Error(),
-		})
+		sendError(err, w)
 		return
 	}
 
@@ -80,8 +72,7 @@ func RenameFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(updateFile)
+	sendOK(updateFile, w)
 }
 
 func MoveFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
@@ -94,15 +85,11 @@ func MoveFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 
 	updateFile, err := file.MoveFile(vars["fileID"], parentPtr, appUser)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(models.Error{
-			Message: err.Error(),
-		})
+		sendError(err, w)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(updateFile)
+	sendOK(updateFile, w)
 }
 
 //TODO: add pagination
@@ -117,30 +104,27 @@ func SearchFiles(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(files)
+	sendOK(files, w)
 }
 
 func DownloadFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 	vars := mux.Vars(r)
-	appFile, err := file.FindByIDUser(bson.ObjectIdHex(vars["fileID"]), appUser.ID)
+	if !bson.IsObjectIdHex(vars["fileID"]) {
+		sendErrorStr("Wrong file ID", w)
+		return
+	}
 
+	appFile, err := file.FindByIDUser(bson.ObjectIdHex(vars["fileID"]), appUser.ID)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(models.Error{
-			Message: err.Error(),
-		})
+		sendError(err, w)
 		return
 	}
 
 	if appFile.IsDir {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(models.Error{
-			Message: "You can not download folder",
-		})
+		//TODO: add this ability
+		sendErrorStr("You can not download folder", w)
 		return
 	}
-
 
 	w.Header().Add("Content-Description", "File Transfer")
 	w.Header().Add("Content-Transfer-Encoding", "binary")
@@ -158,7 +142,4 @@ func DownloadFile(w http.ResponseWriter, r *http.Request, appUser *models.User) 
 	defer realFile.Close()
 
 	io.Copy(w, realFile)
-	//http.ServeFile(w, r, filePath)
-	//os.Open()
-
 }

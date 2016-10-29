@@ -234,6 +234,10 @@ func SearchFiles(keyword string, appUser *models.User) (files []models.File, err
 	}
 	defer session.Close()
 
+	if len(keyword) < 3 {
+		return nil, errors.New("Too short keyword")
+	}
+
 	err = db.C(Collection).Find(bson.M{"name": bson.RegEx{
 		Pattern: keyword,
 		Options: "",

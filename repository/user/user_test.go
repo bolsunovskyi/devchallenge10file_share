@@ -10,39 +10,40 @@ func init() {
 }
 
 func TestCreateUser(t *testing.T) {
+	defer test.TearDown(t)
+
 	if _, err := CreateUser("Vasili1y", "Pupk1in", "vas1123iliy@gmail.com", "123456"); err != nil {
 		t.Error(err)
 	}
-
-	test.TearDown(t)
 }
 
 func TestFindUserByEmail(t *testing.T) {
-	_, err := CreateUser("Vasili1y", "Pupk1in", "vas1121123iliy@gmail.com", "123456");
+	defer test.TearDown(t)
 
+	_, err := CreateUser("Vasili1y", "Pupk1in", "vas1121123iliy@gmail.com", "123456");
 	if  err != nil {
 		t.Error(err.Error())
-	} else {
-		if _, err := FindUserByEmail("vas1121123iliy@gmail.com"); err != nil {
-			t.Error(err.Error())
-		}
+		return
 	}
 
-	test.TearDown(t)
+	if _, err := FindUserByEmail("vas1121123iliy@gmail.com"); err != nil {
+		t.Error(err.Error())
+	}
 }
 
 func TestCheckUser(t *testing.T) {
-	_, err := CreateUser("Vasili1y", "Pupk1in", "v11as1121123iliy@gmail.com", "123456");
+	defer test.TearDown(t)
 
+	_, err := CreateUser("Vasili1y", "Pupk1in", "v11as1121123iliy@gmail.com", "123456");
 	if  err != nil {
 		t.Error(err.Error())
-	} else {
-		if _, err := CheckUser("v11as1121123iliy@gmail.com", "123456"); err != nil {
-			t.Error(err.Error())
-		}
+		return
 	}
 
-	test.TearDown(t)
+	_, err = CheckUser("v11as1121123iliy@gmail.com", "123456")
+	if err != nil {
+		t.Error(err.Error())
+	}
 }
 
 func TestDeleteUser(t *testing.T) {
