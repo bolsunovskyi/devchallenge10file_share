@@ -41,6 +41,12 @@ var appRoutes = routes{
 		HandlerFunc:	middleware.Auth(handlers.UploadFile),
 	},
 	route{
+		Name:		"SearchFiles",
+		Method:		"GET",
+		Pattern:	"/v1/files/search/{keyword}",
+		HandlerFunc:	middleware.Auth(handlers.SearchFiles),
+	},
+	route{
 		Name:		"ListFiles",
 		Method:		"GET",
 		Pattern:	"/v1/files/{parent}",
@@ -53,6 +59,12 @@ var appRoutes = routes{
 		HandlerFunc:	middleware.Auth(handlers.ListFiles),
 	},
 	route{
+		Name:		"MoveFile",
+		Method:		"PATCH",
+		Pattern:	"/v1/file/{fileID}",
+		HandlerFunc:	middleware.Auth(handlers.MoveFile),
+	},
+	route{
 		Name:		"DeleteFile",
 		Method:		"DELETE",
 		Pattern:	"/v1/file/{fileID}",
@@ -63,5 +75,11 @@ var appRoutes = routes{
 		Method:		"PUT",
 		Pattern:	"/v1/file/{fileID}",
 		HandlerFunc:	middleware.Auth(handlers.RenameFile),
+	},
+	route{
+		Name:		"DownloadFile",
+		Method:		"GET",
+		Pattern:	"/v1/file/{fileID}",
+		HandlerFunc:	middleware.Auth(handlers.DownloadFile),
 	},
 }

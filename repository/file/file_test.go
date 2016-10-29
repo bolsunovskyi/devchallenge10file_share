@@ -128,3 +128,38 @@ func TestRenameFile(t *testing.T) {
 
 	test.TearDown(t)
 }
+
+func TestMoveFile(t *testing.T) {
+	defer test.TearDown(t)
+
+	appUser, err := user.CreateUser("foo", "bar", "foo1255@gmail.com", "123456");
+	if  err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	folder1, err := CreateFolder("images223s4", nil, appUser);
+	if  err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	folder2, err := CreateFolder("image23rs223s4", nil, appUser);
+	if  err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	parentID := folder2.ID.Hex()
+	_, err = MoveFile(folder1.ID.Hex(), &parentID, appUser)
+	if  err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	_, err = MoveFile(folder1.ID.Hex(), nil, appUser)
+	if  err != nil {
+		t.Error(err.Error())
+		return
+	}
+}

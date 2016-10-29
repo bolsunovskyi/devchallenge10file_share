@@ -11,7 +11,7 @@ import (
 	"os"
 )
 
-func checkParent(parentID *string) (*models.File, error) {
+func checkParent(parentID *string, appUser *models.User) (*models.File, error) {
 	var parent *models.File
 	if parentID != nil {
 		if !bson.IsObjectIdHex(*parentID) {
@@ -20,9 +20,13 @@ func checkParent(parentID *string) (*models.File, error) {
 
 		parentIDObj := bson.ObjectIdHex(*parentID)
 		var err error
-		parent, err = FindByID(parentIDObj)
+		parent, err = FindByIDUser(parentIDObj, appUser.ID)
 		if err != nil {
 			return nil, err
+		}
+
+		if !parent.IsDir {
+			return nil, errors.New("Parent is not folder")
 		}
 	}
 

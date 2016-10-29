@@ -6,6 +6,10 @@ import (
 	"file_share/repository/file"
 	"encoding/json"
 	"file_share/models"
+	"gopkg.in/mgo.v2/bson"
+	"fmt"
+	"os"
+	"io"
 )
 
 func UploadFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
@@ -78,4 +82,83 @@ func RenameFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(updateFile)
+}
+
+func MoveFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
+	vars := mux.Vars(r)
+	parentID := r.FormValue("parent_id")
+	var parentPtr *string
+	if parentID != "" {
+		parentPtr = &parentID
+	}
+
+	updateFile, err := file.MoveFile(vars["fileID"], parentPtr, appUser)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(models.Error{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(updateFile)
+}
+
+//TODO: add pagination
+func SearchFiles(w http.ResponseWriter, r *http.Request, appUser *models.User) {
+	vars := mux.Vars(r)
+	files, err := file.SearchFiles(vars["keyword"], appUser)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(models.Error{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(files)
+}
+
+func DownloadFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
+	vars := mux.Vars(r)
+	appFile, err := file.FindByIDUser(bson.ObjectIdHex(vars["fileID"]), appUser.ID)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(models.Error{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	if appFile.IsDir {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(models.Error{
+			Message: "You can not download folder",
+		})
+		return
+	}
+
+
+	w.Header().Add("Content-Description", "File Transfer")
+	w.Header().Add("Content-Transfer-Encoding", "binary")
+	w.Header().Add("Connection", "Kepp-Alive")
+	w.Header().Add("Pragma", "public")
+	w.Header().Add("Content-Type", "application/force-download")
+	w.Header().Add("Content-Type", "application/octet-stream")
+	w.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", appFile.Name))
+	w.Header().Add("Content-Length", fmt.Sprintf("%d", appFile.FileSize))
+	w.WriteHeader(http.StatusOK)
+
+
+	filePath := fmt.Sprintf("%s/%s", appFile.RealPath, appFile.RealName)
+	realFile, _ := os.Open(filePath)
+	defer realFile.Close()
+
+	io.Copy(w, realFile)
+	//http.ServeFile(w, r, filePath)
+	//os.Open()
+
 }

@@ -1,0 +1,8 @@
+port = 8090
+secret = "lfjxsuqs6wmmygp7d1as"
+dataFolder = "_data"
+
+[mongo]
+host = "docker_mongo"
+port = 27017
+db = "file_share"

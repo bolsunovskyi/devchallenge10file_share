@@ -29,12 +29,24 @@ func FindByID(fileID bson.ObjectId) (*models.File, error) {
 	}
 	defer session.Close()
 
+	findFile := models.File{}
+	err = db.C(Collection).Find(bson.M{"_id": fileID}).One(&findFile)
 	if err != nil {
 		return nil, err
 	}
 
+	return &findFile, nil
+}
+
+func FindByIDUser(fileID bson.ObjectId, userID bson.ObjectId) (*models.File, error) {
+	session, db, err := database.GetSession()
+	if err != nil {
+		return nil, err
+	}
+	defer session.Close()
+
 	findFile := models.File{}
-	err = db.C(Collection).Find(bson.M{"_id": fileID}).One(&findFile)
+	err = db.C(Collection).Find(bson.M{"_id": fileID, "userID": userID}).One(&findFile)
 	if err != nil {
 		return nil, err
 	}

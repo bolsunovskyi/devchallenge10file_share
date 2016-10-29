@@ -44,3 +44,18 @@ func TestCheckUser(t *testing.T) {
 
 	test.TearDown(t)
 }
+
+func TestDeleteUser(t *testing.T) {
+	defer test.TearDown(t)
+
+	appUser, err := CreateUser("Vasili1y", "Pupk1in", "v11as112ssd1123iliy@gmail.com", "123456");
+	if  err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	err = DeleteUser(appUser.ID)
+	if err != nil {
+		t.Error(err.Error())
+	}
+}

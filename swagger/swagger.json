@@ -1,0 +1,506 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "File Share API",
+        "description": "File Share API, devchallange 10",
+        "version": "1.0.0"
+    },
+    "host": "localhost:8090",
+    "schemes": [
+        "http"
+    ],
+    "basePath": "/v1",
+    "produces": [
+        "application/json"
+    ],
+    "consumes": [
+        "application/x-www-form-urlencoded"
+    ],
+    "paths": {
+        "/user": {
+            "post": {
+                "summary": "Register new user",
+                "description": "Create new user in system\n",
+                "parameters": [
+                    {
+                        "name": "first_name",
+                        "in": "formData",
+                        "description": "User first name.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "last_name",
+                        "in": "formData",
+                        "description": "User last name.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "email",
+                        "in": "formData",
+                        "description": "User email.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "password",
+                        "in": "formData",
+                        "description": "User password.",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "user"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User created",
+                        "schema": {
+                            "$ref": "#/definitions/User"
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/token": {
+            "post": {
+                "summary": "Obtain access token",
+                "description": "To access REST API user must get access token",
+                "parameters": [
+                    {
+                        "name": "email",
+                        "in": "formData",
+                        "description": "User email.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "password",
+                        "in": "formData",
+                        "description": "User password.",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "user"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully get access token",
+                        "schema": {
+                            "$ref": "#/definitions/Token"
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/file/{file}": {
+            "put": {
+                "summary": "Rename file",
+                "description": "Rename file",
+                "parameters": [
+                    {
+                        "name": "file",
+                        "in": "path",
+                        "description": "File id",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "Access-Token",
+                        "in": "header",
+                        "required": true,
+                        "description": "User access token",
+                        "type": "string"
+                    },
+                    {
+                        "name": "name",
+                        "in": "formData",
+                        "required": true,
+                        "description": "File new name",
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "file"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully rename file",
+                        "schema": {
+                            "$ref": "#/definitions/File"
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "Move file",
+                "description": "Move file to another folder",
+                "parameters": [
+                    {
+                        "name": "file",
+                        "in": "path",
+                        "description": "File id",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "Access-Token",
+                        "in": "header",
+                        "required": true,
+                        "description": "User access token",
+                        "type": "string"
+                    },
+                    {
+                        "name": "parent_id",
+                        "description": "Id of the parent folder, if you want to place file in root fodlder, you can skip this param",
+                        "in": "formData",
+                        "type": "string",
+                        "required": false
+                    }
+                ],
+                "tags": [
+                    "file"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully move file",
+                        "schema": {
+                            "$ref": "#/definitions/File"
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete file",
+                "description": "Delete file by id",
+                "parameters": [
+                    {
+                        "name": "file",
+                        "in": "path",
+                        "description": "File id",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "Access-Token",
+                        "in": "header",
+                        "required": true,
+                        "description": "User access token",
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "file"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Successfully delete file"
+                    },
+                    "400": {
+                        "description": "Error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            },
+            "get": {
+                "summary": "Download file",
+                "description": "Fully download file",
+                "parameters": [
+                    {
+                        "name": "file",
+                        "in": "path",
+                        "description": "File id",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "access-token",
+                        "in": "query",
+                        "required": true,
+                        "type": "string",
+                        "description": "User access token"
+                    }
+                ],
+                "tags": [
+                    "file"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully download file"
+                    },
+                    "400": {
+                        "description": "Error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Upload file or create folder",
+                "description": "Create new file. If you want to create folder, you must pass File-Folder header, if you want to upload file, send it's content via request body.",
+                "parameters": [
+                    {
+                        "name": "file",
+                        "in": "path",
+                        "description": "File name",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "File-Folder",
+                        "in": "header",
+                        "description": "Pass this header to create folder, value of header is not importamt, for example you may pass true value",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "Access-Token",
+                        "in": "header",
+                        "required": true,
+                        "description": "User access token",
+                        "type": "string"
+                    },
+                    {
+                        "name": "File-Parent",
+                        "in": "header",
+                        "required": false,
+                        "description": "Parent folder id of file",
+                        "type": "string"
+                    },
+                    {
+                        "name": "body",
+                        "required": false,
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "tags": [
+                    "file"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully create file",
+                        "schema": {
+                            "$ref": "#/definitions/File"
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/files": {
+            "get": {
+                "summary": "Get user files of root folder",
+                "description": "Get files of root folder",
+                "parameters": [
+                    {
+                        "name": "Access-Token",
+                        "in": "header",
+                        "required": true,
+                        "type": "string",
+                        "description": "User access token"
+                    }
+                ],
+                "tags": [
+                    "file"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully get list of files",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/File"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/{parent_id}": {
+            "get": {
+                "summary": "Get user files of specified folder",
+                "description": "Get files of specified folder",
+                "parameters": [
+                    {
+                        "name": "parent_id",
+                        "in": "path",
+                        "description": "parent id",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "Access-Token",
+                        "in": "header",
+                        "required": true,
+                        "type": "string",
+                        "description": "User access token"
+                    }
+                ],
+                "tags": [
+                    "file"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully get list of files",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/File"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/search/{keyword}": {
+            "get": {
+                "summary": "Search for files",
+                "description": "Search file by keyword",
+                "parameters": [
+                    {
+                        "name": "keyword",
+                        "in": "path",
+                        "description": "search keyword",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "Access-Token",
+                        "in": "header",
+                        "required": true,
+                        "type": "string",
+                        "description": "User access token"
+                    }
+                ],
+                "tags": [
+                    "file"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully search files",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/File"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Token": {
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "File": {
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "parent_id": {
+                    "type": "string"
+                },
+                "file_size": {
+                    "type": "number"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "is_folder": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "User": {
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "Error": {
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

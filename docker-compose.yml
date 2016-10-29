@@ -1,0 +1,21 @@
+version: '2'
+
+services:
+    golang:
+        build: ./
+        image: golang_file_share
+        depends_on:
+            - mongo
+        ports:
+            - 8090:8090
+
+    mongo:
+        image: mongo:latest
+        expose:
+            - 27017
+        container_name: docker_mongo
+
+    swagger:
+        build: ./swagger/
+        ports:
+            - 8091:8080

@@ -15,7 +15,7 @@ var Collection string = "file"
 
 func UploadFile(reader io.Reader, fileName string, parentID *string, appUser *models.User) (uploadedFile *models.File, err error) {
 
-	parent, err := checkParent(parentID)
+	parent, err := checkParent(parentID, appUser)
 	if err != nil {
 		return
 	}
@@ -68,7 +68,7 @@ func UploadFile(reader io.Reader, fileName string, parentID *string, appUser *mo
 }
 
 func CreateFolder(fileName string, parentID *string, appUser *models.User) (uploadedFile *models.File, err error) {
-	parent, err := checkParent(parentID)
+	parent, err := checkParent(parentID, appUser)
 	if err != nil {
 		return
 	}
@@ -108,6 +108,7 @@ func CreateFolder(fileName string, parentID *string, appUser *models.User) (uplo
 
 //ListFiles returns all files by folder
 func ListFiles(folderID *string, appUser *models.User) (files []models.File, err error) {
+	files = make([]models.File, 0)
 	session, db, err := database.GetSession()
 	if err != nil {
 		return nil, err
@@ -116,7 +117,7 @@ func ListFiles(folderID *string, appUser *models.User) (files []models.File, err
 
 	var parent *models.File
 
-	if parent, err = checkParent(folderID); err == nil && parent != nil {
+	if parent, err = checkParent(folderID, appUser); err == nil && parent != nil {
 		folderOBJID := bson.ObjectIdHex(*folderID)
 		err = db.C(Collection).Find(bson.M{"parentID": folderOBJID, "userID": appUser.ID}).All(&files)
 	} else if err == nil && parent == nil {
@@ -147,6 +148,9 @@ func DeleteFile(fileID string, appUser *models.User) error {
 		return err
 	}
 
+	//TODO: remove all children if folder
+	//TODO: remove real file
+
 	return nil
 }
 
@@ -169,15 +173,13 @@ func RenameFile(fileID string, fileName string, appUser *models.User) (*models.F
 	}
 	defer session.Close()
 
-	updateFile, err := FindByID(bson.ObjectIdHex(fileID))
+	updateFile, err := FindByIDUser(bson.ObjectIdHex(fileID), appUser.ID)
 	if err != nil {
 		return nil, err
 	}
-	if updateFile.UserID != appUser.ID {
-		return nil, errors.New("Wrong file ID")
-	}
 
 	updateFile.Name = fileName
+	updateFile.Updated = time.Now()
 
 	err = db.C(Collection).Update(bson.M{"_id": updateFile.ID, "userID": appUser.ID}, updateFile)
 	if err != nil {
@@ -185,4 +187,57 @@ func RenameFile(fileID string, fileName string, appUser *models.User) (*models.F
 	}
 
 	return updateFile, nil
+}
+
+func MoveFile(fileID string, parentID *string, appUser *models.User) (*models.File, error) {
+	if !bson.IsObjectIdHex(fileID) || (parentID != nil && !bson.IsObjectIdHex(*parentID)) {
+		return nil, errors.New("Wrong ID")
+	}
+
+	parent, err := checkParent(parentID, appUser)
+	if err != nil {
+		return nil, err
+	}
+
+	session, db, err := database.GetSession()
+	if err != nil {
+		return nil, err
+	}
+	defer session.Close()
+
+	updateFile, err := FindByIDUser(bson.ObjectIdHex(fileID), appUser.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if parent != nil {
+		updateFile.ParentID = parent.ID
+	} else {
+		var parent bson.ObjectId
+		updateFile.ParentID = parent
+	}
+
+	updateFile.Updated = time.Now()
+
+	err = db.C(Collection).Update(bson.M{"_id": updateFile.ID, "userID": appUser.ID}, updateFile)
+	if err != nil {
+		return nil, err
+	}
+
+	return updateFile, nil
+}
+
+func SearchFiles(keyword string, appUser *models.User) (files []models.File, err error) {
+	session, db, err := database.GetSession()
+	if err != nil {
+		return nil, err
+	}
+	defer session.Close()
+
+	err = db.C(Collection).Find(bson.M{"name": bson.RegEx{
+		Pattern: keyword,
+		Options: "",
+	}, "userID": appUser.ID}).All(&files)
+
+	return
 }

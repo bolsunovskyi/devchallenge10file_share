@@ -10,7 +10,21 @@ import (
 //Auth authentication middleware for handler functions
 func Auth(f func(http.ResponseWriter, *http.Request, *models.User)) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if appUser, err := jwt.CheckToken(r.Header.Get("Access-Token")); err != nil {
+		var token string
+
+		if r.Header.Get("Access-Token") != "" {
+			token = r.Header.Get("Access-Token")
+		} else if r.FormValue("access-token") != "" {
+			token = r.FormValue("access-token")
+		} else {
+			w.WriteHeader(http.StatusForbidden)
+			json.NewEncoder(w).Encode(models.Error{
+				Message:        "Token is not passed",
+			})
+			return
+		}
+
+		if appUser, err := jwt.CheckToken(token); err != nil {
 			w.WriteHeader(http.StatusForbidden)
 			json.NewEncoder(w).Encode(models.Error{
 				Message:        err.Error(),
