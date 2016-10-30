@@ -15,7 +15,7 @@ func init() {
 }
 
 func createUserAndToken() (*models.User, *string, error) {
-	appUser, err := user.CreateUser("foo", "bar", "foo8@gmail.com", "123456");
+	appUser, err := user.CreateUser("foo", "bar", "fooasda8@gmail.com", "123456");
 	if err != nil {
 		return nil, nil, err
 	}

@@ -9,8 +9,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var Collection string = "user"
+//Collection var for user collection name
+var Collection = "user"
 
+//CreateUser creates user by credentials
 func CreateUser(firstName string, lastName string, email string, password string) (*models.User, error) {
 	user := models.User{
 		FirstName:	firstName,
@@ -46,6 +48,7 @@ func CreateUser(firstName string, lastName string, email string, password string
 	return &user, nil
 }
 
+//FindUserByEmail looks for user by his email
 func FindUserByEmail(email string) (*models.User, error) {
 	session, db, err := database.GetSession()
 	if err != nil {
@@ -64,6 +67,7 @@ func FindUserByEmail(email string) (*models.User, error) {
 	return &user, nil
 }
 
+//DeleteUser delete user by ID
 func DeleteUser(userID bson.ObjectId) error {
 	session, db, err := database.GetSession()
 	if err != nil {
@@ -78,6 +82,7 @@ func DeleteUser(userID bson.ObjectId) error {
 	return nil
 }
 
+//CheckUser checks user email and password
 func CheckUser(email string, password string) (*models.User, error) {
 	user, err := FindUserByEmail(email);
 	if  err != nil {

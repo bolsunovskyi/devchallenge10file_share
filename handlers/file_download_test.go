@@ -11,6 +11,7 @@ import (
 	"file_share/test"
 	"file_share/repository/file"
 	"strings"
+	"file_share/config"
 )
 
 func TestDownloadFileWrongID(t *testing.T) {
@@ -82,6 +83,16 @@ func TestDownloadFileFolder(t *testing.T) {
 		return
 	}
 
+	parent := folder.ID.Hex()
+	_, err = file.UploadFile(strings.NewReader("sadasdas"), "asdsad", &parent, appUser)
+	if err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	dataFolder := config.Config.DataFolder
+	config.Config.DataFolder = "/dqdqwdqwdqwd"
+
 	router := mux.NewRouter()
 	router.HandleFunc("/v1/file/{fileID}", middleware.Auth(DownloadFile))
 	req, _ := http.NewRequest(
@@ -92,11 +103,23 @@ func TestDownloadFileFolder(t *testing.T) {
 	recorder := httptest.NewRecorder()
 	router.ServeHTTP(recorder, req)
 
+	config.Config.DataFolder = dataFolder
+
 	if status := recorder.Code; status != http.StatusBadRequest {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusBadRequest)
+
 		return
 	}
+
+	recorder = httptest.NewRecorder()
+	router.ServeHTTP(recorder, req)
+
+	if status := recorder.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
 }
 
 func TestDownloadFile(t *testing.T) {

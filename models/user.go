@@ -2,6 +2,7 @@ package models
 
 import "gopkg.in/mgo.v2/bson"
 
+//User type for representing user entity
 type User struct {
 	ID		bson.ObjectId	`bson:"_id,omitempty" json:"id"`
 	FirstName	string		`validate:"required" bson:"first_name" json:"first_name"`
@@ -10,6 +11,7 @@ type User struct {
 	Password	string		`validate:"required,min=3" json:"-"`
 }
 
+//LoginUser type for validating user login
 type LoginUser struct {
 	ID		bson.ObjectId	`bson:"_id,omitempty"`
 	Email		string		`validate:"required,email"`

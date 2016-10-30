@@ -24,14 +24,15 @@ func Auth(f func(http.ResponseWriter, *http.Request, *models.User)) http.Handler
 			return
 		}
 
-		if appUser, err := jwt.CheckToken(token); err != nil {
+		appUser, err := jwt.CheckToken(token)
+		if err != nil {
 			w.WriteHeader(http.StatusForbidden)
 			json.NewEncoder(w).Encode(models.Error{
 				Message:        err.Error(),
 			})
 			return
-		} else {
-			f(w, r, appUser)
 		}
+
+		f(w, r, appUser)
 	})
 }

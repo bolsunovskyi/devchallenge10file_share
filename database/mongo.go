@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+//GetSession creates mongo session connection
 func GetSession() (*mgo.Session, *mgo.Database, error) {
 	session, err := mgo.DialWithTimeout(
 		fmt.Sprintf("%s:%d", config.Config.Mongo.Host, config.Config.Mongo.Port),

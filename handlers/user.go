@@ -6,6 +6,7 @@ import (
 	"file_share/jwt"
 )
 
+//CreateUser create user handler
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	appUser, err := user.CreateUser(
 		r.FormValue("first_name"),
@@ -21,6 +22,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	sendOK(appUser, w)
 }
 
+//LoginUser login user handler
 func LoginUser(w http.ResponseWriter, r *http.Request) {
 	appUser, err := user.CheckUser(r.FormValue("email"), r.FormValue("password"))
 	if err != nil {

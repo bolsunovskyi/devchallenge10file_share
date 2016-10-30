@@ -6,6 +6,8 @@ import (
 	"file_share/repository/user"
 	"file_share/config"
 	"gopkg.in/mgo.v2/bson"
+	"strings"
+	"os"
 )
 
 func TestDeleteFile(t *testing.T) {
@@ -102,6 +104,71 @@ func TestDeleteFileWrongUser(t *testing.T) {
 	err = DeleteFile(folder.ID.Hex(), appUser2)
 	if err == nil {
 		t.Error("No error on wrong user")
+		return
+	}
+}
+
+func TestDeleteRealFile(t *testing.T) {
+	defer test.TearDown(t)
+	defer os.RemoveAll(config.Config.DataFolder)
+
+	appUser, err := user.CreateUser("foo", "bar", "fowqdqwdo4@gmail.com", "123456")
+	if err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	uFile, err := UploadFile(strings.NewReader("fooo baar"), "sadasd", nil, appUser)
+	if err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	err = DeleteFile(uFile.ID.Hex(), appUser)
+	if err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestRecursiveDelete(t *testing.T) {
+	defer test.TearDown(t)
+	defer os.RemoveAll(config.Config.DataFolder)
+
+	appUser, err := user.CreateUser("foo", "bar", "fowqdqwdo4@gmail.com", "123456")
+	if err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	folder, err := CreateFolder("images3", nil, appUser)
+	if err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	parent := folder.ID.Hex()
+	folder1, err := CreateFolder("images3", &parent, appUser)
+	if err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	_, err = UploadFile(strings.NewReader("fooo baar"), "sadasd", &parent, appUser)
+	if err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	parent2 := folder1.ID.Hex()
+	_, err = UploadFile(strings.NewReader("fooo baar"), "sadasd", &parent2, appUser)
+	if err != nil {
+		t.Error(err.Error())
+		return
+	}
+
+	err = DeleteFile(folder.ID.Hex(), appUser)
+	if err != nil {
+		t.Error(err.Error())
 		return
 	}
 }

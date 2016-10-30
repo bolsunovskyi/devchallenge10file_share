@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+//File type for representing file entity
 type File struct {
 	ID		bson.ObjectId	`bson:"_id,omitempty" json:"id"`
 	Name		string		`json:"name"`

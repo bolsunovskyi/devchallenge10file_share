@@ -6,6 +6,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+//FindByNameAndDir look for file by name and parent folder
 func FindByNameAndDir(name string, parent *models.File) (*models.File, error) {
 	session, db, err := database.GetSession()
 	if err != nil {
@@ -29,6 +30,7 @@ func FindByNameAndDir(name string, parent *models.File) (*models.File, error) {
 	return &findFile, nil
 }
 
+//FindByID look for file by it's ID
 func FindByID(fileID bson.ObjectId) (*models.File, error) {
 	session, db, err := database.GetSession()
 	if err != nil {
@@ -45,6 +47,7 @@ func FindByID(fileID bson.ObjectId) (*models.File, error) {
 	return &findFile, nil
 }
 
+//FindByIDUser look for file by it's id and owner
 func FindByIDUser(fileID bson.ObjectId, userID bson.ObjectId) (*models.File, error) {
 	session, db, err := database.GetSession()
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"testing"
 )
 
+//InitConfig helper function for tests, it opens config file
 func InitConfig(configPath string) {
 	config.File = "config_test.toml"
 	if err := config.Read(configPath); !err {
@@ -14,6 +15,7 @@ func InitConfig(configPath string) {
 	}
 }
 
+//TearDown drops test database
 func TearDown(t *testing.T) {
 	session, db, err := database.GetSession()
 	if err != nil {

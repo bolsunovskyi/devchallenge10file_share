@@ -22,7 +22,7 @@ func main() {
 		Addr: 		fmt.Sprintf(":%d", config.Config.Port),
 		Handler: 	handlers.CORS(
 			handlers.AllowedHeaders(
-				[]string{"Access-Token", "File-Folder", "Content-Type"}),
+				[]string{"Access-Token", "File-Folder", "Content-Type", "File-Parent"}),
 			handlers.AllowedMethods([]string{"PATCH", "POST", "PUT", "DELETE", "GET", "OPTIONS"}))(appRouter),
 		ReadTimeout: 	time.Hour,
 		WriteTimeout:	time.Hour,

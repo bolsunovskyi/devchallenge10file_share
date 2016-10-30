@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+//Mongo type for mongo config settings
 type Mongo struct {
 	Host	string
 	Port	uint
@@ -13,6 +14,7 @@ type Mongo struct {
 	Timeout	time.Duration
 }
 
+//AppConfig type for app configuration
 type AppConfig struct {
 	Secret		string
 	Port		uint
@@ -20,9 +22,12 @@ type AppConfig struct {
 	DataFolder	string
 }
 
-var File string = "config.toml"
+//File name of the config file
+var File = "config.toml"
+//Config var for app config
 var Config AppConfig
 
+//Read func for reading configuration file
 func Read(path string) bool {
 	if _, err := toml.DecodeFile(fmt.Sprintf("%s%s", path, File), &Config); err != nil {
 		fmt.Println(err.Error())

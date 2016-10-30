@@ -9,10 +9,15 @@ import (
 	"file_share/database"
 	"errors"
 	"regexp"
+	"fmt"
+	"archive/zip"
+	"file_share/config"
 )
 
-var Collection string = "file"
+//Collection file collection name
+var Collection = "file"
 
+//UploadFile uploads file and saves it to fs and db
 func UploadFile(reader io.Reader, fileName string, parentID *string, appUser *models.User) (uploadedFile *models.File, err error) {
 
 	session, db, err := database.GetSession()
@@ -66,6 +71,7 @@ func UploadFile(reader io.Reader, fileName string, parentID *string, appUser *mo
 	return uploadedFile, nil
 }
 
+//CreateFolder creates folder and save it to db
 func CreateFolder(fileName string, parentID *string, appUser *models.User) (uploadedFile *models.File, err error) {
 	session, db, err := database.GetSession()
 	if err != nil {
@@ -124,6 +130,7 @@ func ListFiles(folderID *string, appUser *models.User) (files []models.File, err
 	return
 }
 
+//DeleteFile deleted file from db and fs
 func DeleteFile(fileID string, appUser *models.User) error {
 	if !bson.IsObjectIdHex(fileID) {
 		return errors.New("Wrong file ID")
@@ -140,17 +147,27 @@ func DeleteFile(fileID string, appUser *models.User) error {
 		return err
 	}
 
+	if !deleteFile.IsDir {
+		os.Remove(fmt.Sprintf("%s/%s", deleteFile.RealPath, deleteFile.RealName))
+	} else {
+		var children []models.File
+		err := db.C(Collection).Find(bson.M{"parentID": deleteFile.ID}).All(&children)
+		if err == nil {
+			for _, v := range children {
+				DeleteFile(v.ID.Hex(), appUser)
+			}
+		}
+	}
+
 	err = db.C(Collection).Remove(bson.M{"_id": deleteFile.ID, "userID": appUser.ID})
 	if err != nil {
 		return err
 	}
 
-	//TODO: remove all children if folder
-	//TODO: remove real file
-
 	return nil
 }
 
+//RenameFile changes file name
 func RenameFile(fileID string, fileName string, appUser *models.User) (*models.File, error) {
 	if !bson.IsObjectIdHex(fileID) {
 		return nil, errors.New("Wrong file ID")
@@ -186,6 +203,7 @@ func RenameFile(fileID string, fileName string, appUser *models.User) (*models.F
 	return updateFile, nil
 }
 
+//MoveFile moves file to another folder
 func MoveFile(fileID string, parentID *string, appUser *models.User) (*models.File, error) {
 	if !bson.IsObjectIdHex(fileID) || (parentID != nil && !bson.IsObjectIdHex(*parentID)) {
 		return nil, errors.New("Wrong ID")
@@ -224,6 +242,7 @@ func MoveFile(fileID string, parentID *string, appUser *models.User) (*models.Fi
 	return updateFile, nil
 }
 
+//SearchFiles search for files
 func SearchFiles(keyword string, appUser *models.User) (files []models.File, err error) {
 	session, db, err := database.GetSession()
 	if err != nil {
@@ -241,4 +260,62 @@ func SearchFiles(keyword string, appUser *models.User) (files []models.File, err
 	}, "userID": appUser.ID}).All(&files)
 
 	return
+}
+
+//CreateZipArchive creates zip archive from folder
+func CreateZipArchive(folder models.File, appUser models.User) (*string, *int64, error) {
+	if !folder.IsDir {
+		return nil, nil, errors.New("Only folder may be zipped")
+	}
+
+	filePath := fmt.Sprintf("%s/zip_%d", config.Config.DataFolder, time.Now().Unix())
+
+	zipFile, err := os.Create(filePath)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer zipFile.Close()
+
+	archive := zip.NewWriter(zipFile)
+	defer archive.Close()
+
+	err = archiveFolder(folder, archive, appUser)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	info, err := os.Stat(filePath)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	size := info.Size()
+	return &filePath, &size, nil
+}
+
+func archiveFolder(folder models.File, writer *zip.Writer, appUser models.User) error {
+	parent := folder.ID.Hex()
+	files, err := ListFiles(&parent, &appUser)
+	if err != nil {
+		return err
+	}
+
+	for _, userFile := range files {
+		if userFile.IsDir {
+			archiveFolder(userFile, writer, appUser)
+		} else {
+			f, err := writer.Create(userFile.Name)
+			if err != nil {
+				return err
+			}
+			uFile, err := os.Open(fmt.Sprintf("%s/%s", userFile.RealPath, userFile.RealName))
+			if err != nil {
+				return err
+			}
+			io.Copy(f, uFile)
+			uFile.Close()
+		}
+	}
+
+	return nil
 }

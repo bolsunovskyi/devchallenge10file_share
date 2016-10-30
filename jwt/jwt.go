@@ -10,8 +10,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-//TODO: change auth scheme to public/private key
-
+//CreateToken creates new access token for specified user
 func CreateToken(tokenUser models.User) (*string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"ID": tokenUser.ID.Hex(),
@@ -28,6 +27,7 @@ func CreateToken(tokenUser models.User) (*string, error) {
 	return &tokenString, nil
 }
 
+//CheckToken verifies token and returns user
 func CheckToken(tokenString string) (*models.User, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

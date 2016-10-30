@@ -12,10 +12,11 @@ import (
 	"io"
 )
 
+//UploadFile upload file handler
 func UploadFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 	vars := mux.Vars(r)
 	fileName := vars["fileName"]
-	var parent *string = nil
+	var parent *string
 	parentHeader := r.Header.Get("File-Parent")
 	if parentHeader != "" {
 		parent = &parentHeader
@@ -28,8 +29,9 @@ func UploadFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 	}
 }
 
-//TODO: add pagination
+//ListFiles handler for list files
 func ListFiles(w http.ResponseWriter, r *http.Request, appUser *models.User) {
+	//TODO: maybe add pagination
 	vars := mux.Vars(r)
 	var files []models.File
 	var err error
@@ -48,6 +50,7 @@ func ListFiles(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 	sendOK(files, w)
 }
 
+//DeleteFile delete file handler
 func DeleteFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 	vars := mux.Vars(r)
 
@@ -60,6 +63,7 @@ func DeleteFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+//RenameFile rename file handler
 func RenameFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 	vars := mux.Vars(r)
 
@@ -75,6 +79,7 @@ func RenameFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 	sendOK(updateFile, w)
 }
 
+//MoveFile move file handler
 func MoveFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 	vars := mux.Vars(r)
 	parentID := r.FormValue("parent_id")
@@ -92,8 +97,9 @@ func MoveFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 	sendOK(updateFile, w)
 }
 
-//TODO: add pagination
+//SearchFiles search files handler
 func SearchFiles(w http.ResponseWriter, r *http.Request, appUser *models.User) {
+	//TODO: maybe add pagination
 	vars := mux.Vars(r)
 	files, err := file.SearchFiles(vars["keyword"], appUser)
 	if err != nil {
@@ -107,6 +113,7 @@ func SearchFiles(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 	sendOK(files, w)
 }
 
+//DownloadFile download file handler
 func DownloadFile(w http.ResponseWriter, r *http.Request, appUser *models.User) {
 	vars := mux.Vars(r)
 	if !bson.IsObjectIdHex(vars["fileID"]) {
@@ -120,11 +127,6 @@ func DownloadFile(w http.ResponseWriter, r *http.Request, appUser *models.User) 
 		return
 	}
 
-	if appFile.IsDir {
-		//TODO: add this ability
-		sendErrorStr("You can not download folder", w)
-		return
-	}
 
 	w.Header().Add("Content-Description", "File Transfer")
 	w.Header().Add("Content-Transfer-Encoding", "binary")
@@ -132,14 +134,32 @@ func DownloadFile(w http.ResponseWriter, r *http.Request, appUser *models.User) 
 	w.Header().Add("Pragma", "public")
 	w.Header().Add("Content-Type", "application/force-download")
 	w.Header().Add("Content-Type", "application/octet-stream")
-	w.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", appFile.Name))
-	w.Header().Add("Content-Length", fmt.Sprintf("%d", appFile.FileSize))
-	w.WriteHeader(http.StatusOK)
 
+	if appFile.IsDir {
+		path, size, err := file.CreateZipArchive(*appFile, *appUser)
+		if err != nil {
+			sendError(err, w)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.zip\"", appFile.Name))
+		w.Header().Add("Content-Length", fmt.Sprintf("%d", size))
 
-	filePath := fmt.Sprintf("%s/%s", appFile.RealPath, appFile.RealName)
-	realFile, _ := os.Open(filePath)
-	defer realFile.Close()
+		realFile, _ := os.Open(*path)
+		defer realFile.Close()
+		defer os.Remove(*path)
 
-	io.Copy(w, realFile)
+		io.Copy(w, realFile)
+
+	} else {
+		w.WriteHeader(http.StatusOK)
+		w.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", appFile.Name))
+		w.Header().Add("Content-Length", fmt.Sprintf("%d", appFile.FileSize))
+
+		filePath := fmt.Sprintf("%s/%s", appFile.RealPath, appFile.RealName)
+		realFile, _ := os.Open(filePath)
+		defer realFile.Close()
+
+		io.Copy(w, realFile)
+	}
 }
