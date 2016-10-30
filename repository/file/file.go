@@ -15,13 +15,18 @@ var Collection string = "file"
 
 func UploadFile(reader io.Reader, fileName string, parentID *string, appUser *models.User) (uploadedFile *models.File, err error) {
 
+	session, db, err := database.GetSession()
+	if err != nil {
+		return nil, err
+	}
+	defer session.Close()
+
 	parent, err := checkParent(parentID, appUser)
 	if err != nil {
 		return
 	}
 
-	if sameName, err := FindByName(fileName); err == nil && !sameName.IsDir {
-		//TODO: check parent
+	if sameName, err := FindByNameAndDir(fileName, parent); err == nil && !sameName.IsDir {
 		return nil, errors.New("File already exists")
 	}
 
@@ -53,14 +58,7 @@ func UploadFile(reader io.Reader, fileName string, parentID *string, appUser *mo
 		uploadedFile.ParentID = parent.ID
 	}
 
-	session, db, err := database.GetSession()
-	if err != nil {
-		return nil, err
-	}
-	defer session.Close()
-
 	err = db.C(Collection).Insert(uploadedFile)
-
 	if err != nil {
 		return
 	}
@@ -69,16 +67,20 @@ func UploadFile(reader io.Reader, fileName string, parentID *string, appUser *mo
 }
 
 func CreateFolder(fileName string, parentID *string, appUser *models.User) (uploadedFile *models.File, err error) {
+	session, db, err := database.GetSession()
+	if err != nil {
+		return nil, err
+	}
+	defer session.Close()
+
 	parent, err := checkParent(parentID, appUser)
 	if err != nil {
 		return
 	}
 
-	if sameName, err := FindByName(fileName); err == nil && sameName.IsDir {
-		//TODO: check parent
+	if sameName, err := FindByNameAndDir(fileName, parent); err == nil && sameName.IsDir {
 		return nil, errors.New("File already exists")
 	}
-
 
 	uploadedFile = &models.File{
 		ID:		bson.NewObjectId(),
@@ -93,14 +95,7 @@ func CreateFolder(fileName string, parentID *string, appUser *models.User) (uplo
 		uploadedFile.ParentID = parent.ID
 	}
 
-	session, db, err := database.GetSession()
-	if err != nil {
-		return nil, err
-	}
-	defer session.Close()
-
 	err = db.C(Collection).Insert(uploadedFile)
-
 	if err != nil {
 		return
 	}
@@ -161,7 +156,7 @@ func RenameFile(fileID string, fileName string, appUser *models.User) (*models.F
 		return nil, errors.New("Wrong file ID")
 	}
 
-	match, err := regexp.MatchString("[0-9a-zA-Z._]+", fileName)
+	match, err := regexp.MatchString("^[0-9a-zA-Z._]+$", fileName)
 	if err != nil {
 		return nil, err
 	}
@@ -196,16 +191,16 @@ func MoveFile(fileID string, parentID *string, appUser *models.User) (*models.Fi
 		return nil, errors.New("Wrong ID")
 	}
 
-	parent, err := checkParent(parentID, appUser)
-	if err != nil {
-		return nil, err
-	}
-
 	session, db, err := database.GetSession()
 	if err != nil {
 		return nil, err
 	}
 	defer session.Close()
+
+	parent, err := checkParent(parentID, appUser)
+	if err != nil {
+		return nil, err
+	}
 
 	updateFile, err := FindByIDUser(bson.ObjectIdHex(fileID), appUser.ID)
 	if err != nil {

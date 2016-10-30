@@ -24,7 +24,7 @@ func TestFindByNameDBErr(t *testing.T) {
 	port := config.Config.Mongo.Port
 
 	config.Config.Mongo.Port = 64012
-	_, err := FindByName("ssss")
+	_, err := FindByNameAndDir("ssss", nil)
 	if err == nil {
 		t.Error("No error on wrong mongo port")
 	}
@@ -47,8 +47,32 @@ func TestFindByName(t *testing.T) {
 		return
 	}
 
-	_, err = FindByName("images1")
+	_, err = FindByNameAndDir("images1", nil)
 	if err != nil {
 		t.Error(err.Error())
+	}
+}
+
+func TestFindByIDUserDBErr(t *testing.T) {
+	port := config.Config.Mongo.Port
+
+	config.Config.Mongo.Port = 64012
+	_, err := FindByIDUser(bson.NewObjectId(), bson.NewObjectId())
+	if err == nil {
+		t.Error("No error on wrong mongo port")
+	}
+
+	config.Config.Mongo.Port = port
+}
+
+func TestFindByIDWrongID(t *testing.T) {
+	if _, err := FindByID(bson.NewObjectId()); err == nil {
+		t.Error("No error on wrong id")
+	}
+}
+
+func TestFindByIDUserWrongID(t *testing.T) {
+	if _, err := FindByIDUser(bson.NewObjectId(), bson.NewObjectId()); err == nil {
+		t.Error("No error on wrong id")
 	}
 }

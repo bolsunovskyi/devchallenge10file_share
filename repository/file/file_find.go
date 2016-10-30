@@ -6,7 +6,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-func FindByName(name string) (*models.File, error) {
+func FindByNameAndDir(name string, parent *models.File) (*models.File, error) {
 	session, db, err := database.GetSession()
 	if err != nil {
 		return nil, err
@@ -14,9 +14,16 @@ func FindByName(name string) (*models.File, error) {
 	defer session.Close()
 
 	findFile := models.File{}
-	err = db.C(Collection).Find(bson.M{"name": name}).One(&findFile)
-	if err != nil {
-		return nil, err
+	if parent == nil {
+		err = db.C(Collection).Find(bson.M{"name": name}).One(&findFile)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err = db.C(Collection).Find(bson.M{"name": name, "parentID": parent.ID}).One(&findFile)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &findFile, nil
