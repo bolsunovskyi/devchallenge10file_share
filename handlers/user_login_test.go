@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"file_share/test"
 	"file_share/repository/user"
-	"file_share/config"
 )
 
 func TestLoginUser(t *testing.T) {
@@ -61,35 +60,4 @@ func TestLoginUserWrong(t *testing.T) {
 			status, http.StatusBadRequest)
 		return
 	}
-}
-
-func TestLoginUserJwt(t *testing.T) {
-	defer test.TearDown(t)
-
-	_, err := user.CreateUser("foo", "bar", "foo12@gmail.com", "123456")
-	if err != nil {
-		t.Error(err.Error())
-		return
-	}
-
-	secret := config.Config.Secret
-	config.Config.Secret = ""
-
-	router := mux.NewRouter()
-	router.HandleFunc("/v1/auth", LoginUser)
-	req, _ := http.NewRequest(
-		"POST", "/v1/auth",
-		strings.NewReader("email=foo12@gmail.com&password=123456"))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
-
-	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, req)
-
-	if status := recorder.Code; status != http.StatusBadRequest {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusBadRequest)
-		return
-	}
-
-	config.Config.Secret = secret
 }
