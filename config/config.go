@@ -3,12 +3,14 @@ package config
 import (
 	"github.com/BurntSushi/toml"
 	"fmt"
+	"time"
 )
 
 type Mongo struct {
 	Host	string
 	Port	uint
 	DB	string
+	Timeout	time.Duration
 }
 
 type AppConfig struct {

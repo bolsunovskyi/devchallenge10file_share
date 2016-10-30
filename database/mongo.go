@@ -4,10 +4,14 @@ import (
 	"gopkg.in/mgo.v2"
 	"fmt"
 	"file_share/config"
+	"time"
 )
 
 func GetSession() (*mgo.Session, *mgo.Database, error) {
-	session, err := mgo.Dial(fmt.Sprintf("%s:%d", config.Config.Mongo.Host, config.Config.Mongo.Port))
+	session, err := mgo.DialWithTimeout(
+		fmt.Sprintf("%s:%d", config.Config.Mongo.Host, config.Config.Mongo.Port),
+		time.Second * config.Config.Mongo.Timeout)
+	//session, err := mgo.Dial(fmt.Sprintf("%s:%d", config.Config.Mongo.Host, config.Config.Mongo.Port))
 	if err != nil {
 		return nil, nil, err
 	}

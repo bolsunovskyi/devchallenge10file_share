@@ -90,39 +90,6 @@ func TestListFiles(t *testing.T) {
 	}
 }
 
-func TestDeleteFile(t *testing.T) {
-	defer test.TearDown(t)
-
-	appUser, err := user.CreateUser("foo", "bar", "foo4@gmail.com", "123456")
-	if err != nil {
-		t.Error(err.Error())
-		return
-	}
-
-	folder, err := CreateFolder("images3", nil, appUser)
-	if err != nil {
-		t.Error(err.Error())
-		return
-	}
-
-	folderID := folder.ID.Hex()
-	err = DeleteFile(folderID, appUser)
-	if err != nil {
-		t.Error(err.Error())
-		return
-	}
-
-	files, err := ListFiles(nil, appUser)
-	if err != nil {
-		t.Error(err.Error())
-		return
-	}
-
-	if len(files) > 0 {
-		t.Error("File list is not empty")
-	}
-}
-
 func TestRenameFile(t *testing.T) {
 	defer test.TearDown(t)
 

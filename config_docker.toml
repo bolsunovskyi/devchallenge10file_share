@@ -6,3 +6,4 @@ dataFolder = "_data"
 host = "docker_mongo"
 port = 27017
 db = "file_share"
+timeout = 10

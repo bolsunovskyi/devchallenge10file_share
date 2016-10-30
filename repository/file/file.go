@@ -21,6 +21,7 @@ func UploadFile(reader io.Reader, fileName string, parentID *string, appUser *mo
 	}
 
 	if sameName, err := FindByName(fileName); err == nil && !sameName.IsDir {
+		//TODO: check parent
 		return nil, errors.New("File already exists")
 	}
 
@@ -74,6 +75,7 @@ func CreateFolder(fileName string, parentID *string, appUser *models.User) (uplo
 	}
 
 	if sameName, err := FindByName(fileName); err == nil && sameName.IsDir {
+		//TODO: check parent
 		return nil, errors.New("File already exists")
 	}
 

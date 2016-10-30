@@ -6,3 +6,4 @@ dataFolder = "_data"
 host = "localhost"
 port = 27017
 db = "file_share"
+timeout = 10
